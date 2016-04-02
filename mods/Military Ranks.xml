@@ -1,0 +1,66 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+	<mod name = "Military Ranks" version = "1.0" author = "Teckman" enabled = "yes">
+		<config name = "ranks"><![CDATA[
+			titles = {
+				[5] = "Private First Class",
+				[10] = "Specialist",
+				[15] = "Corporal",
+				[20] = "Sergeant",
+				[25] = "Staff Sergeant",
+				[30] = "Sergeant First Class",
+				[35] = "Master Sergeant",
+				[40] = "First Sergeant",
+				[45] = "Sergeant Major",
+				[50] = "Command Sergeant Major",
+				[55] = "Sergeant Major of the Army",
+				[60] = "Second Lieutenant",
+				[65] = "First Lieutenant",
+				[70] = "Captain",
+				[75] = "Major",
+				[80] = "Lieutenant Colonel",
+				[90] = "Colonel",
+				[100] = "Brigadier General",
+				[110] = "Major General",
+				[120] = "Lieutenant General",
+				[140] = "General",
+				[170] = "General of the Army"
+			}
+			fragsStorage = 600
+		]]></config>
+		<event type = "look" name = "ranksLook" event = "script"><![CDATA[
+			domodlib("ranks")
+			function onLook(cid, thing, position, lookDistance)
+				if(isPlayer(thing.uid)) then
+					local rank = {rank = "Private", frags = 0}
+					for k, v in pairs(titles) do
+						if(math.max(0, getPlayerStorageValue(thing.uid, fragsStorage)) > k - 1) then
+							if(k - 1 > rank.frags) then
+								rank.rank, rank.frags = v, k - 1
+							end
+						end
+					end
+					doPlayerSetSpecialDescription(thing.uid, "\n Military rank: " .. rank.rank)
+				end
+				return true
+			end
+		]]></event>
+		<event type = "kill" name = "ranksKill" event = "script"><![CDATA[
+			domodlib("ranks")
+			function onKill(cid, target)
+				if(isPlayer(target)) then
+					setPlayerStorageValue(cid, fragsStorage, math.max(0, getPlayerStorageValue(cid, fragsStorage) + 1))
+					if(titles[getPlayerStorageValue(cid, fragsStorage)]) then
+						doPlayerSendTextMessage(cid, MESSAGE_INFO_DESCR, "You advanced to military rank: " .. titles[getPlayerStorageValue(cid, fragsStorage)] .. ". Congratulations " .. titles[getPlayerStorageValue(cid, fragsStorage)] .. "!")
+					end
+				end
+				return true
+			end
+		]]></event>
+		<event type = "login" name = "ranksLogin" event = "script"><![CDATA[
+			function onLogin(cid)
+				registerCreatureEvent(cid, "ranksKill")
+				registerCreatureEvent(cid, "ranksLook")
+				return true
+			end
+		]]></event>
+	</mod>
